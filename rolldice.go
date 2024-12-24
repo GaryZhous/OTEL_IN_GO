@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"net/http"
-	"strconv"
+	"sync"
 
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel"
@@ -17,17 +16,18 @@ import (
 const name = "go.opentelemetry.io/otel/example/dice"
 
 var (
-	tracer = otel.Tracer(name)
-	meter  = otel.Meter(name)
-	logger = otelslog.NewLogger(name)
-	rollCnt metric.Int64Counter
+	tracer     = otel.Tracer(name)
+	meter      = otel.Meter(name)
+	logger     = otelslog.NewLogger(name)
+	rollCnt    metric.Int64Counter
+	logs       []string
+	logsMutex  sync.Mutex
+	playerRoll = make(map[string]int)
 )
 
 func init() {
 	var err error
-	rollCnt, err = meter.Int64Counter("dice.rolls",
-		metric.WithDescription("The number of rolls by roll value"),
-		metric.WithUnit("{roll}"))
+	rollCnt, err = meter.Int64Counter("dice.rolls", metric.WithDescription("The number of dice rolls by value"))
 	if err != nil {
 		panic(err)
 	}
@@ -37,22 +37,40 @@ func rolldice(w http.ResponseWriter, r *http.Request) {
 	ctx, span := tracer.Start(r.Context(), "roll")
 	defer span.End()
 
-	roll := 1 + rand.Intn(6)
-
-	var msg string
-	if player := r.PathValue("player"); player != "" {
-		msg = fmt.Sprintf("%s is rolling the dice", player)
-	} else {
-		msg = "Anonymous player is rolling the dice"
+	player := r.URL.Query().Get("player")
+	if player == "" {
+		player = "Anonymous"
 	}
-	logger.InfoContext(ctx, msg, "result", roll)
 
+	roll := 1 + rand.Intn(6)
 	rollValueAttr := attribute.Int("roll.value", roll)
 	span.SetAttributes(rollValueAttr)
 	rollCnt.Add(ctx, 1, metric.WithAttributes(rollValueAttr))
 
-	resp := strconv.Itoa(roll) + "\n"
-	if _, err := io.WriteString(w, resp); err != nil {
-		log.Printf("Write failed: %v\n", err)
+	msg := fmt.Sprintf("%s rolled a %d 🎲", player, roll)
+	logger.InfoContext(ctx, msg)
+	addLog(msg)
+
+	resp := fmt.Sprintf("Hi %s, your dice roll is: %d\n", player, roll)
+	w.WriteHeader(http.StatusOK)
+	io.WriteString(w, resp)
+}
+
+func viewLogs(w http.ResponseWriter, r *http.Request) {
+	logsMutex.Lock()
+	defer logsMutex.Unlock()
+	for _, logEntry := range logs {
+		io.WriteString(w, logEntry+"\n")
 	}
+}
+
+func resetMetrics(w http.ResponseWriter, r *http.Request) {
+	playerRoll = make(map[string]int)
+	io.WriteString(w, "Metrics have been reset!\n")
+}
+
+func addLog(entry string) {
+	logsMutex.Lock()
+	defer logsMutex.Unlock()
+	logs = append(logs, entry)
 }

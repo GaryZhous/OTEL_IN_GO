@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 )
 
 func main() {
+	fmt.Println("Starting Dice Roller Server... 🚀")
 	if err := run(); err != nil {
 		log.Fatalln(err)
 	}
@@ -44,6 +46,7 @@ func run() (err error) {
 	}
 	srvErr := make(chan error, 1)
 	go func() {
+		log.Println("Dice Roller Server is running at http://localhost:8080 🎲")
 		srvErr <- srv.ListenAndServe()
 	}()
 
@@ -56,6 +59,7 @@ func run() (err error) {
 		// Wait for first CTRL+C.
 		// Stop receiving signal notifications as soon as possible.
 		stop()
+		fmt.Println("Shutting down server... 😴")
 	}
 
 	// When Shutdown is called, ListenAndServe immediately returns ErrServerClosed.
@@ -66,19 +70,18 @@ func run() (err error) {
 func newHTTPHandler() http.Handler {
 	mux := http.NewServeMux()
 
-	// handleFunc is a replacement for mux.HandleFunc
-	// which enriches the handler's HTTP instrumentation with the pattern as the http.route.
+	// Define routes.
 	handleFunc := func(pattern string, handlerFunc func(http.ResponseWriter, *http.Request)) {
-		// Configure the "http.route" for the HTTP instrumentation.
+		// Configure the "http.route" for HTTP instrumentation.
 		handler := otelhttp.WithRouteTag(pattern, http.HandlerFunc(handlerFunc))
 		mux.Handle(pattern, handler)
 	}
 
-	// Register handlers.
 	handleFunc("/rolldice/", rolldice)
 	handleFunc("/rolldice/{player}", rolldice)
+	handleFunc("/logs", viewLogs)
+	handleFunc("/metrics/reset", resetMetrics)
 
-	// Add HTTP instrumentation for the whole server.
-	handler := otelhttp.NewHandler(mux, "/")
-	return handler
+	// Wrap the server with OpenTelemetry instrumentation.
+	return otelhttp.NewHandler(mux, "DiceRollerServer")
 }
