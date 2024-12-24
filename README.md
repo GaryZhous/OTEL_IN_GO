@@ -23,3 +23,24 @@ curl http://localhost:8080/logs
 ```bash
 curl http://localhost:8080/metrics/reset
 ```
+## Installation and Running
+### Clone Repository
+```bash
+git clone https://github.com/OTEL_IN_GO.git
+cd OTEL_IN_GO
+```
+### Install Dependencies
+```bash
+go mod tidy
+```
+### Run the Server
+```bash
+go run .
+```
+### Access Server
+http://localhost:8080
+
+### Observability Exporters
+-Traces: stdouttrace.New
+-Metrics: stdoutmetric.New
+-Logs: stdoutlog.New
