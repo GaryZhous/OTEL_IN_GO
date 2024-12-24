@@ -41,6 +41,6 @@ go run .
 http://localhost:8080
 
 ### Observability Exporters
-  -Traces: stdouttrace.New
-  -Metrics: stdoutmetric.New
-  -Logs: stdoutlog.New
+- Traces: stdouttrace.New
+- Metrics: stdoutmetric.New
+- Logs: stdoutlog.New
