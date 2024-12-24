@@ -10,3 +10,16 @@
 ### `/rolldice/`
 ```bash
 curl http://localhost:8080/rolldice/
+```
+### `/rolldice/{player}`
+```bash
+curl "http://localhost:8080/rolldice/?player=Alice"
+```
+### `/logs`
+```bash
+curl http://localhost:8080/logs
+```
+### `/metrics/reset`
+```bash
+curl http://localhost:8080/metrics/reset
+```
