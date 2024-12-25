@@ -81,6 +81,7 @@ func newHTTPHandler() http.Handler {
 	handleFunc("/rolldice/{player}", rolldice)
 	handleFunc("/logs", viewLogs)
 	handleFunc("/metrics/reset", resetMetrics)
+	handleFunc("/leaderboard", viewLeaderboard)
 
 	// Wrap the server with OpenTelemetry instrumentation.
 	return otelhttp.NewHandler(mux, "DiceRollerServer")
