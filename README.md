@@ -46,9 +46,9 @@ http://localhost:8080/rolldice
 - Logs: `stdoutlog.New`
 
 ## Instructions to Run the Tests
-- Start the Dice Roller server by running the main program: go run main.go.
-- Run the tests using the go test command:
+1. Start the Dice Roller server by running the main program: go run main.go.
+2. Run the tests using the go test command:
 ```bash
 go test -v
 ```
-- Verify the test output for success and printed responses from the server.
+3. Verify the test output for success and printed responses from the server.
