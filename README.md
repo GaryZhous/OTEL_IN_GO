@@ -38,7 +38,7 @@ go mod tidy
 go run .
 ```
 ### Access Server
-http://localhost:8080/rolldice
+http://localhost:8080
 
 ### Observability Exporters
 - Traces: `stdouttrace.New`
