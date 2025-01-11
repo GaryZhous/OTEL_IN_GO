@@ -1,5 +1,5 @@
 # OpenTelemetry example in golang
-[OpenTelemetry](https://opentelemetry.io/) is an observability framework – an API, SDK, and tools that are designed to aid in the generation and collection of application telemetry data such as metrics, logs, and traces.
+[OpenTelemetry](https://opentelemetry.io/) is an observability framework – an API, SDK, and tools that are designed to aid in the generation and collection of application telemetry data such as metrics, logs, and traces. This example is a dice rolling server.
 ## Features
 - Dice Rolling API for anonymous or named players.
 - Telemetry with OpenTelemetry for tracing, metrics, and logging.
